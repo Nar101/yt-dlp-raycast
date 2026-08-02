@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve the Raycast download console.
+Thanks for helping improve Media Saver for Raycast.
 
 ## Scope
 
@@ -8,7 +8,7 @@ Please keep changes focused on the local macOS workflow:
 
 - Raycast commands and task-list interactions
 - detached worker lifecycle and failure recovery
-- yt-dlp/ffmpeg integration
+- local media-saving component integration
 - documentation and reproducible validation
 
 Do not include browser profiles, Cookies, downloaded media, task state, or machine-specific absolute paths in commits or issue reports.

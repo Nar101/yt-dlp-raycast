@@ -22,13 +22,15 @@ export type TaskErrorKind =
   | "unknown";
 
 export interface TaskState {
-  version: 1 | 2;
+  version: 1 | 2 | 3;
   id: string;
   url: string;
   mode: "video" | "mp4" | "audio";
   outputDir: string;
   subtitles: boolean;
   cookies: "none" | "chrome" | "safari" | "firefox";
+  ytDlpPath?: string;
+  ffmpegPath?: string;
   status: TaskStatus;
   phase?: TaskPhase;
   percent: number | null;
@@ -62,6 +64,8 @@ export function createTaskState(input: {
   outputDir: string;
   subtitles: boolean;
   cookies: TaskState["cookies"];
+  ytDlpPath?: string;
+  ffmpegPath?: string;
   attempt?: number;
   retryOf?: string;
 }): TaskRecord {
@@ -71,7 +75,7 @@ export function createTaskState(input: {
   const statePath = join(taskDir, "state.json");
   const timestamp = new Date().toISOString();
   const state: TaskState = {
-    version: 2,
+    version: 3,
     id,
     ...input,
     status: "queued",

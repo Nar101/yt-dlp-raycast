@@ -1,7 +1,7 @@
 import { Action, ActionPanel, Detail, Icon, List, showToast, Toast } from "@raycast/api";
-import { homedir } from "node:os";
 import { useEffect, useState } from "react";
 import { retryTask } from "./task-runner";
+import { DEFAULT_OUTPUT_DIR } from "./runtime";
 import {
   listTaskStates,
   readTaskAppState,
@@ -69,7 +69,7 @@ function statusLabel(task: TaskRecord): string {
   if (task.status === "running") {
     if (task.phase === "preflight") return "检查环境中";
     if (task.phase === "extracting") return "解析中";
-    if (task.phase === "post-processing") return "合并/转码中";
+    if (task.phase === "post-processing") return "处理文件中";
     return task.percent === null ? "下载中" : `下载中 · ${task.percent.toFixed(1)}%`;
   }
   if (task.status === "success") return "已完成";
@@ -94,15 +94,15 @@ function renderLog(lines: string[]): string {
 
 function errorKindLabel(kind?: TaskErrorKind): string {
   if (kind === "invalid_input") return "链接/参数";
-  if (kind === "authentication") return "登录/Cookies";
+  if (kind === "authentication") return "网站登录";
   if (kind === "unavailable") return "媒体不可用";
   if (kind === "network") return "网络/代理";
   if (kind === "rate_limited") return "站点限流";
   if (kind === "storage") return "目录/磁盘";
-  if (kind === "ffmpeg") return "ffmpeg 后处理";
-  if (kind === "environment") return "本机环境";
+  if (kind === "ffmpeg") return "视频处理";
+  if (kind === "environment") return "下载设置";
   if (kind === "cancelled") return "用户取消";
-  if (kind === "interrupted") return "后台进程";
+  if (kind === "interrupted") return "后台任务";
   return "未知原因";
 }
 
@@ -247,21 +247,21 @@ export function DownloadTasks() {
   return (
     <List
       isLoading={isLoading}
-      navigationTitle={`Download Tasks · ${activeTasks.length} active`}
+      navigationTitle={`Download Queue · ${activeTasks.length} active`}
       searchBarPlaceholder="Filter downloads"
       actions={
         <ActionPanel>
-          <Action title="Refresh" icon={Icon.ArrowClockwise} onAction={refresh} />
+          <Action title="Refresh Queue" icon={Icon.ArrowClockwise} onAction={refresh} />
           <Action.Open
-            title="Open Download Folder"
-            target={tasks[0]?.outputDir ?? `${homedir()}/Downloads/yt-dlp`}
+            title="Open Save Folder"
+            target={tasks[0]?.outputDir ?? DEFAULT_OUTPUT_DIR}
             icon={Icon.Folder}
           />
         </ActionPanel>
       }
     >
       {tasks.length === 0 ? (
-        <List.EmptyView title="No download tasks" description="Start a download from the yt-dlp command." icon={Icon.Download} />
+        <List.EmptyView title="No downloads yet" description="Start with Save Media." icon={Icon.Download} />
       ) : (
         <>
           {completionNotice.length > 0 && (
@@ -301,22 +301,22 @@ function CompletedTaskItem({ task }: { task: TaskRecord }) {
       actions={
         <ActionPanel>
           <Action.Open
-            title="Open Downloaded File"
+            title="Open Saved File"
             target={openTarget(task)}
             icon={Icon.ArrowRight}
             shortcut={{ modifiers: ["cmd"], key: "o" }}
           />
           <Action.ShowInFinder
-            title="Show Downloaded File in Finder"
+            title="Show Saved File in Finder"
             path={openTarget(task)}
           />
           <Action.Open
-            title="Open Download Folder"
+            title="Open Save Folder"
             target={task.outputDir}
             icon={Icon.Folder}
             shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
           />
-          <Action.CopyToClipboard title="Copy Downloaded File Path" content={task.outputPath ?? task.outputDir} />
+          <Action.CopyToClipboard title="Copy Saved File Path" content={task.outputPath ?? task.outputDir} />
         </ActionPanel>
       }
     />
@@ -349,29 +349,29 @@ function TaskListItem({
       accessories={[{ text: progress }]}
       actions={
         <ActionPanel>
-          <Action.Push title="View Log" icon={Icon.Document} target={<Detail markdown={taskMarkdown(task)} />} />
+          <Action.Push title="View Details" icon={Icon.Document} target={<Detail markdown={taskMarkdown(task)} />} />
           {isActive && (
-            <Action title="Cancel Task" icon={Icon.Stop} style={Action.Style.Destructive} onAction={onCancel} />
+            <Action title="Cancel Download" icon={Icon.Stop} style={Action.Style.Destructive} onAction={onCancel} />
           )}
           {(task.status === "failure" || task.status === "cancelled" || task.status === "interrupted") && (
-            <Action title="Retry Task" icon={Icon.ArrowClockwise} onAction={onRetry} />
+            <Action title="Retry Download" icon={Icon.ArrowClockwise} onAction={onRetry} />
           )}
           {task.status === "success" && (
             <Action.Open
-              title="Open Downloaded File"
+              title="Open Saved File"
               target={openTarget(task)}
               icon={Icon.ArrowRight}
               shortcut={{ modifiers: ["cmd"], key: "o" }}
             />
           )}
           <Action.Open
-            title="Open Download Folder"
+            title="Open Save Folder"
             target={task.outputDir}
             icon={Icon.Folder}
             shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
           />
-          <Action.ShowInFinder title="Show Folder in Finder" path={task.outputDir} />
-          <Action.CopyToClipboard title="Copy Task Log" content={task.lines.join("\n")} />
+          <Action.ShowInFinder title="Show Save Folder in Finder" path={task.outputDir} />
+          <Action.CopyToClipboard title="Copy Details" content={task.lines.join("\n")} />
         </ActionPanel>
       }
     />

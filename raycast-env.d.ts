@@ -15,6 +15,8 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `download` command */
   export type Download = ExtensionPreferences & {}
+  /** Preferences accessible in the `setup` command */
+  export type Setup = ExtensionPreferences & {}
   /** Preferences accessible in the `tasks` command */
   export type Tasks = ExtensionPreferences & {}
 }
@@ -22,6 +24,8 @@ declare namespace Preferences {
 declare namespace Arguments {
   /** Arguments passed to the `download` command */
   export type Download = {}
+  /** Arguments passed to the `setup` command */
+  export type Setup = {}
   /** Arguments passed to the `tasks` command */
   export type Tasks = {}
 }

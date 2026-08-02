@@ -1,12 +1,9 @@
 import { environment } from "@raycast/api";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { DEFAULT_OUTPUT_DIR, getRuntimeReport } from "./runtime";
 import { createTaskState, writeTaskState, type TaskRecord, type TaskState } from "./task-store";
-
-const HOMEBREW_BIN = "/opt/homebrew/bin";
-const DEFAULT_OUTPUT_DIR = join(homedir(), "Downloads", "yt-dlp");
 
 export type DownloadMode = "video" | "mp4" | "audio";
 export type CookieSource = "none" | "chrome" | "safari" | "firefox";
@@ -16,6 +13,8 @@ export interface DownloadJob {
   outputDir: string;
   subtitles: boolean;
   cookies: CookieSource;
+  ytDlpPath?: string;
+  ffmpegPath?: string;
 }
 
 export function enqueueTask(
@@ -24,12 +23,16 @@ export function enqueueTask(
   options: { attempt?: number; retryOf?: string } = {},
 ): TaskRecord {
   const workerPath = join(environment.assetsPath, "worker.js");
+  const outputDir = job.outputDir || DEFAULT_OUTPUT_DIR;
+  const runtime = job.ytDlpPath && job.ffmpegPath ? null : getRuntimeReport(outputDir);
   const task = createTaskState({
     url,
     mode: job.mode,
-    outputDir: job.outputDir || DEFAULT_OUTPUT_DIR,
+    outputDir,
     subtitles: job.subtitles,
     cookies: job.cookies,
+    ytDlpPath: job.ytDlpPath ?? runtime?.ytDlp.path ?? undefined,
+    ffmpegPath: job.ffmpegPath ?? runtime?.ffmpeg.path ?? undefined,
     attempt: options.attempt ?? 1,
     retryOf: options.retryOf,
   });
@@ -73,7 +76,13 @@ export function enqueueTask(
       stdio: "ignore",
       env: {
         ...process.env,
-        PATH: `${HOMEBREW_BIN}:${process.env.PATH ?? "/usr/bin:/bin"}`,
+        PATH: [
+          task.ytDlpPath ? join(task.ytDlpPath, "..") : undefined,
+          task.ffmpegPath ? join(task.ffmpegPath, "..") : undefined,
+          process.env.PATH ?? "/usr/bin:/bin",
+        ]
+          .filter(Boolean)
+          .join(":"),
       },
     });
     child.once("error", (error) => failToStart(error.message));

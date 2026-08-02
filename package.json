@@ -1,9 +1,9 @@
 {
-  "name": "yt-dlp-raycast",
-  "title": "Yt-Dlp Download",
-  "description": "Download video, audio, or subtitles with the local yt-dlp installation",
+  "name": "media-saver",
+  "title": "Media Saver",
+  "description": "Download media from thousands of sites directly from Raycast",
   "icon": "icon.png",
-  "author": "nar",
+  "author": "nar_alan",
   "license": "MIT",
   "platforms": [
     "macOS"
@@ -16,20 +16,27 @@
     "video",
     "audio",
     "download",
-    "youtube",
-    "media"
+    "media",
+    "save",
+    "raycast"
   ],
   "commands": [
     {
       "name": "download",
-      "title": "Download with Yt-Dlp",
-      "description": "Download a video, audio track, or subtitles",
+      "title": "Save Media",
+      "description": "Save a video, audio track, or subtitles from a link",
+      "mode": "view"
+    },
+    {
+      "name": "setup",
+      "title": "Download Setup",
+      "description": "Check whether this Mac is ready to save media",
       "mode": "view"
     },
     {
       "name": "tasks",
-      "title": "Download Tasks",
-      "description": "View and control all active and recent downloads",
+      "title": "Download Queue",
+      "description": "See active, completed, and failed downloads",
       "mode": "view"
     }
   ],
@@ -44,6 +51,7 @@
   "scripts": {
     "dev": "ray develop",
     "build": "ray build -e dist -o dist",
-    "lint": "ray lint"
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
   }
 }

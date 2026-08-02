@@ -7,9 +7,6 @@ const { spawn } = require("node:child_process");
 const statePath = process.argv[2];
 if (!statePath) process.exit(2);
 
-const YTDLP_PATH = "/opt/homebrew/bin/yt-dlp";
-const FFMPEG_PATH = "/opt/homebrew/bin/ffmpeg";
-const HOMEBREW_BIN = "/opt/homebrew/bin";
 const MAX_CONCURRENT_DOWNLOADS = 3;
 const MIN_FREE_BYTES = 50 * 1024 * 1024;
 
@@ -22,6 +19,24 @@ let stateWriteError = null;
 let stdoutBuffer = "";
 let stderrBuffer = "";
 
+function findExecutable(name, preferredPath) {
+  const candidates = [
+    preferredPath,
+    "/opt/homebrew/bin/" + name,
+    "/usr/local/bin/" + name,
+    ...(process.env.PATH || "").split(":").filter(Boolean).map((directory) => path.join(directory, name)),
+  ].filter(Boolean);
+  for (const candidate of [...new Set(candidates)]) {
+    try {
+      fs.accessSync(candidate, fs.constants.X_OK);
+      return candidate;
+    } catch {
+      // Try the next known Homebrew/PATH location.
+    }
+  }
+  return null;
+}
+
 try {
   state = JSON.parse(fs.readFileSync(statePath, "utf8"));
 } catch (error) {
@@ -29,6 +44,9 @@ try {
   process.stderr.write(`Could not read task state: ${String(error)}\n`);
   process.exit();
 }
+
+const YTDLP_PATH = findExecutable("yt-dlp", state.ytDlpPath);
+const FFMPEG_PATH = findExecutable("ffmpeg", state.ffmpegPath);
 
 function now() {
   return new Date().toISOString();
@@ -253,12 +271,19 @@ async function waitForSlot() {
 }
 
 function assertExecutable(filePath, label) {
+  const friendlyName = label === "yt-dlp" ? "link support" : "video support";
+  if (!filePath) {
+    const error = new Error(`${friendlyName} is missing`);
+    error.kind = "environment";
+    error.hint = "请打开 Download Setup 查看安装步骤。";
+    throw error;
+  }
   try {
     fs.accessSync(filePath, fs.constants.X_OK);
   } catch {
-    const error = new Error(`${label} 不存在或不可执行：${filePath}`);
+    const error = new Error(`${friendlyName} is not available`);
     error.kind = "environment";
-    error.hint = label === "yt-dlp" ? "请在终端运行 brew install yt-dlp，或确认 Homebrew 路径未变化。" : "请安装或修复 ffmpeg，然后重试。";
+    error.hint = "请打开 Download Setup 重新检查，然后再试。";
     throw error;
   }
 }
@@ -343,7 +368,7 @@ function classifyFailure(lines, code, signal) {
     return { kind: "storage", error: "输出目录不可写或磁盘空间不足", hint: "检查输出目录权限和磁盘剩余空间，然后重试。" };
   }
   if (/ffmpeg|ffprobe|postprocessing|post-process|extractaudio/.test(text)) {
-    return { kind: "ffmpeg", error: "ffmpeg 后处理失败", hint: "确认 ffmpeg 可执行；也可以改用“视频”模式再试。" };
+    return { kind: "ffmpeg", error: "视频处理失败", hint: "打开 Download Setup 检查视频处理组件；也可以改用视频模式再试。" };
   }
   if (/too many requests|http error 429|rate.?limit|temporarily blocked/.test(text)) {
     return { kind: "rate_limited", error: "站点限流或暂时封锁请求", hint: "稍后重试，减少同时下载数量，必要时使用已登录浏览器 Cookies。" };
@@ -362,7 +387,7 @@ function classifyFailure(lines, code, signal) {
   }
   return {
     kind: "unknown",
-    error: `yt-dlp 下载失败（${signal ? signal : `退出码 ${code ?? "未知"}`}）`,
+    error: `下载失败（${signal ? signal : `退出码 ${code ?? "未知"}`}）`,
     hint: "打开任务日志查看最后一条错误；如果是临时问题，可以直接重试。",
   };
 }
@@ -453,7 +478,7 @@ function markCancelled() {
     pid: null,
     error: "任务已取消",
     errorKind: "cancelled",
-    errorHint: "如果只是暂时中断，可以在任务列表中重试；已下载的临时文件会按 yt-dlp 规则续传。",
+    errorHint: "如果只是暂时中断，可以在下载列表中重试；已下载的临时文件会继续使用。",
     finishedAt: now(),
   });
   process.exitCode = 143;
@@ -489,7 +514,13 @@ heartbeat.unref();
       cwd: state.outputDir,
       env: {
         ...process.env,
-        PATH: `${HOMEBREW_BIN}:${process.env.PATH || "/usr/bin:/bin"}`,
+        PATH: [
+          YTDLP_PATH ? path.dirname(YTDLP_PATH) : undefined,
+          FFMPEG_PATH ? path.dirname(FFMPEG_PATH) : undefined,
+          process.env.PATH || "/usr/bin:/bin",
+        ]
+          .filter(Boolean)
+          .join(":"),
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -498,8 +529,8 @@ heartbeat.unref();
     child.stderr.on("data", (chunk) => consumeChunk(chunk, "stderr"));
     child.once("error", (error) => {
       if (cancelled || finalized) return;
-      appendLines([`[worker] Could not start yt-dlp: ${error.message}`]);
-      finishFailure("environment", "yt-dlp 启动失败", "确认 /opt/homebrew/bin/yt-dlp 存在且可执行，然后重试。");
+      appendLines([`[worker] 后台下载进程启动失败：${error.message}`]);
+      finishFailure("environment", "后台下载进程启动失败", "打开 Download Setup 重新检查，然后重试。");
     });
     child.once("close", (code, signal) => {
       flushBuffers();
