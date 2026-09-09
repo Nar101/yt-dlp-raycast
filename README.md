@@ -68,7 +68,7 @@ npm run dev
 在 MacBook Air 上执行上面的命令即可。首次打开 Raycast 后运行 `Download Setup`；如果显示缺少依赖，在 Terminal 执行：
 
 ```bash
-brew install yt-dlp ffmpeg
+brew install node yt-dlp ffmpeg
 ```
 
 然后重新运行 `Download Setup`，确认显示 `Ready`。项目不保存浏览器 Cookie、账号凭证或下载内容到 GitHub。
