@@ -55,13 +55,23 @@ Raycast 本来就是 Mac 上最快的操作入口。Media Saver 把下载也放�
 目前项目是公开源码版本，尚未进入 Raycast Store。现在可以通过 Raycast 开发模式使用：
 
 ```bash
-git clone https://github.com/drnavenber-cmd/yt-dlp-raycast.git
+git clone https://github.com/Nar101/yt-dlp-raycast.git
 cd yt-dlp-raycast
 npm install
 npm run dev
 ```
 
 启动后，Raycast 会加载 `Media Saver`。之后搜索 `Save Media`、`Download Setup` 或 `Download Queue` 即可。
+
+### 在另一台 Mac 上安装
+
+在 MacBook Air 上执行上面的命令即可。首次打开 Raycast 后运行 `Download Setup`；如果显示缺少依赖，在 Terminal 执行：
+
+```bash
+brew install yt-dlp ffmpeg
+```
+
+然后重新运行 `Download Setup`，确认显示 `Ready`。项目不保存浏览器 Cookie、账号凭证或下载内容到 GitHub。
 
 等扩展进入 Raycast Store 后，普通用户可以直接从 Raycast 安装，不需要 clone 源码或运行开发命令。
 
