@@ -152,6 +152,7 @@ export function DownloadForm() {
       enableDrafts
       actions={
         <ActionPanel>
+          <Action.SubmitForm title="Save Media" onSubmit={handleSubmit} icon={Icon.Download} />
           <Action title="Paste Links from Clipboard" icon={Icon.Clipboard} onAction={() => void pasteFromClipboard()} />
           <Action.Push
             title="Download Setup"
@@ -161,7 +162,6 @@ export function DownloadForm() {
           {completionNotice && (
             <Action title="Show Completed Downloads" icon={Icon.Checkmark} onAction={openCompletionTasks} />
           )}
-          <Action.SubmitForm title="Save Media" onSubmit={handleSubmit} icon={Icon.Download} />
         </ActionPanel>
       }
     >

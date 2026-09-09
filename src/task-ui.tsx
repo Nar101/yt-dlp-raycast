@@ -218,8 +218,10 @@ export function DownloadTasks() {
     } else if (lastViewedCompletionAt === null && newestCompletedAt > 0) {
       writeTaskAppState({ ...appState, lastViewedCompletionAt: new Date(newestCompletedAt).toISOString() });
     }
-    setTasks(nextTasks);
-    setIsLoading(false);
+    setTasks((currentTasks) =>
+      JSON.stringify(currentTasks) === JSON.stringify(nextTasks) ? currentTasks : nextTasks,
+    );
+    setIsLoading((currentLoading) => (currentLoading ? false : currentLoading));
   };
 
   useEffect(() => {
