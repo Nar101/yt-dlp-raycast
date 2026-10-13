@@ -63,6 +63,8 @@ npm run dev
 
 启动后，Raycast 会加载 `Media Saver`。之后搜索 `Save Media`、`Download Setup` 或 `Download Queue` 即可。
 
+也可以搜索项目名 `yt-dlp`、`ytdlp` 或 `yt-dlp-raycast`，找到这三个入口。中文搜索 `下载视频` 可打开下载表单，`下载设置` 可检查环境，`下载队列` 可查看任务。
+
 ### 在另一台 Mac 上安装
 
 在 MacBook Air 上执行上面的命令即可。首次打开 Raycast 后运行 `Download Setup`；如果显示缺少依赖，在 Terminal 执行：

@@ -25,18 +25,21 @@
       "name": "download",
       "title": "Save Media",
       "description": "Save a video, audio track, or subtitles from a link",
+      "keywords": ["yt-dlp", "ytdlp", "yt-dlp-raycast", "下载", "下载视频", "视频下载", "下载音频", "媒体下载"],
       "mode": "view"
     },
     {
       "name": "setup",
       "title": "Download Setup",
       "description": "Check whether this Mac is ready to save media",
+      "keywords": ["yt-dlp", "ytdlp", "yt-dlp-raycast", "下载设置", "下载检查", "下载环境"],
       "mode": "view"
     },
     {
       "name": "tasks",
       "title": "Download Queue",
       "description": "See active, completed, and failed downloads",
+      "keywords": ["yt-dlp", "ytdlp", "yt-dlp-raycast", "下载队列", "下载任务", "下载进度"],
       "mode": "view"
     }
   ],

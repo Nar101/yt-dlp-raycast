@@ -373,7 +373,7 @@ function classifyFailure(lines, code, signal) {
   if (/too many requests|http error 429|rate.?limit|temporarily blocked/.test(text)) {
     return { kind: "rate_limited", error: "站点限流或暂时封锁请求", hint: "稍后重试，减少同时下载数量，必要时使用已登录浏览器 Cookies。" };
   }
-  if (/no video could be found|video(?:\s+#\d+)?\s+unavailable|video unavailable|deleted|not available|geo.?restricted/.test(text)) {
+  if (/no video could be found|video(?:\s+#\d+)?\s+(?:is\s+)?unavailable|video unavailable|deleted|not available|geo.?restricted/.test(text)) {
     return { kind: "unavailable", error: "链接中的媒体不可用或站点不支持", hint: "确认原帖仍公开可见，尝试原帖链接，不要使用失效的 /video/1 变体。" };
   }
   if (/sign in|log in|login|authentication|cookies?\b|guest token|private video|members-only|age.?restricted|confirm you('re| are) not a bot/.test(text)) {
